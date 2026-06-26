@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Workout">
+<title>Workout</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html{background:#0A0A0F}
+  body{background:#0A0A0F;color:#E8E8F0;font-family:'Inter',sans-serif;max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:env(safe-area-inset-bottom)}
+  ::-webkit-scrollbar{width:4px}
+  ::-webkit-scrollbar-track{background:#111118}
+  ::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
+
+  /* Header */
+  .header{padding:calc(env(safe-area-inset-top) + 24px) 20px 20px;background:linear-gradient(180deg,#111118 0%,#0A0A0F 100%)}
+  .eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;color:#444;text-transform:uppercase;margin-bottom:6px}
+  .title{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;line-height:1.1;color:#fff}
+  .title span{color:#E94560}
+  .subtitle{font-size:12px;color:#555;margin-top:6px}
+
+  /* Stats */
+  .stats-bar{display:flex;gap:8px;padding:12px 12px 0}
+  .stat-pill{flex:1;background:#111118;border:1px solid #1C1C26;border-radius:12px;padding:10px 8px;text-align:center}
+  .stat-num{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#fff}
+  .stat-lbl{font-size:9px;color:#444;text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+
+  /* Week bar */
+  .week-bar{display:flex;gap:6px;padding:16px 20px 8px;overflow-x:auto;scrollbar-width:none}
+  .week-bar::-webkit-scrollbar{display:none}
+  .week-pill{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #1E1E28;background:#111118;color:#555;transition:all .2s}
+  .week-pill.active{background:#E94560;border-color:#E94560;color:#fff;box-shadow:0 0 14px rgba(233,69,96,0.5)}
+
+  /* Progress */
+  .progress-wrap{padding:8px 20px 16px}
+  .progress-label{display:flex;justify-content:space-between;font-size:11px;color:#444;margin-bottom:6px}
+  .progress-track{height:4px;background:#1A1A24;border-radius:2px;overflow:hidden}
+  .progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#E94560,#A855F7);transition:width .5s ease}
+
+  /* Hint */
+  .hint{margin:0 12px 10px;padding:10px 14px;background:#0F0F18;border:1px solid #1C1C26;border-radius:12px;display:flex;align-items:center;gap:10px}
+  .hint-icon{font-size:18px}
+  .hint-text{font-size:11px;color:#555;line-height:1.4}
+  .hint-text b{color:#E94560}
+
+  /* Day cards */
+  .days{padding:0 12px;display:flex;flex-direction:column;gap:10px}
+  .day-card{border-radius:16px;overflow:hidden;background:#111118;border:1px solid #1C1C26;transition:all .25s}
+  .day-card.done{border-color:#1E2A1E;background:#0F1410}
+  .day-card.rest-card{opacity:.55}
+
+  .day-header{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none}
+  .day-dot{width:42px;height:42px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;flex-shrink:0}
+  .day-dot-lbl{font-size:8px;font-weight:700;letter-spacing:1px;opacity:.7}
+  .day-dot-num{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;line-height:1}
+  .day-info{flex:1;min-width:0}
+  .day-name-row{display:flex;align-items:center;gap:6px}
+  .day-name{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff}
+  .day-tag{font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 7px;border-radius:20px;text-transform:uppercase}
+  .day-muscles{font-size:11px;color:#444;margin-top:2px}
+  .day-right{display:flex;align-items:center;gap:10px}
+  .day-badge{font-size:11px;font-weight:600;color:#444}
+  .day-badge.done{color:#22c55e}
+  .chevron{font-size:12px;color:#333;transition:transform .25s}
+  .chevron.open{transform:rotate(180deg)}
+
+  /* Checkbox */
+  .cb{width:22px;height:22px;border-radius:7px;border:2px solid #2A2A38;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;cursor:pointer}
+
+  /* Exercise rows */
+  .ex-list{border-top:1px solid #1C1C26}
+  .ex-row{display:grid;grid-template-columns:18px 1fr 28px auto;align-items:center;gap:10px;padding:10px 14px 10px 16px;border-bottom:1px solid #141420}
+  .ex-row:last-child{border-bottom:none}
+  .ex-cb{width:18px;height:18px;border-radius:5px;border:1.5px solid #2A2A38;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-shrink:0}
+  .ex-info{min-width:0;cursor:pointer}
+  .ex-name{font-size:13px;font-weight:500;color:#C8C8D8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ex-name.done{color:#444;text-decoration:line-through}
+  .ex-name.swapped{color:#FFD700}
+  .ex-meta{font-size:11px;color:#3A3A50;margin-top:1px}
+  .swap-tag{color:#FFD700;margin-left:5px}
+
+  .ex-swap-btn{width:28px;height:28px;border-radius:8px;border:1.5px solid #1E1E2E;background:#0E0E1A;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;flex-shrink:0}
+  .ex-weight-btn{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;cursor:pointer;padding:4px 6px;border-radius:8px;border:none;background:transparent}
+  .ex-w-num{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;line-height:1}
+  .ex-w-unit{font-size:10px;color:#444;margin-top:1px}
+  .ex-w-hint{font-size:9px;color:#333;margin-top:2px;letter-spacing:.5px}
+
+  /* Rest inner */
+  .rest-inner{padding:12px 16px 16px;display:flex;align-items:center;gap:10px}
+  .rest-icon{font-size:22px}
+  .rest-text{font-size:12px;color:#444}
+
+  /* Modal shared */
+  .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px)}
+  .modal{width:100%;max-width:430px;background:#14141E;border-radius:24px 24px 0 0;padding:0 0 calc(env(safe-area-inset-bottom) + 32px);max-height:92vh;overflow-y:auto}
+  .modal-handle{width:36px;height:4px;background:#2A2A3A;border-radius:2px;margin:12px auto 0}
+  .modal-hdr{padding:20px 24px 4px}
+  .modal-title{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#fff}
+  .modal-sub{font-size:12px;color:#444;margin-top:3px}
+  .modal-body{padding:20px 24px}
+  .lbl{font-size:11px;color:#444;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+
+  /* Weight modal */
+  .w-display{display:flex;align-items:center;justify-content:center;margin-bottom:28px}
+  .w-adj{width:52px;height:52px;border-radius:14px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;transition:all .15s;user-select:none}
+  .w-adj.minus{background:#1C1C2C;color:#888}
+  .w-adj.plus{color:#fff}
+  .w-val-wrap{flex:1;text-align:center}
+  .w-val{font-family:'Space Grotesk',sans-serif;font-size:48px;font-weight:700;line-height:1;color:#fff}
+  .w-unit{font-size:13px;color:#555;margin-top:4px}
+  .btn-row{display:flex;gap:8px;margin-bottom:20px}
+  .pill-btn{flex:1;padding:9px 0;border-radius:10px;border:1.5px solid #1C1C2C;background:#111118;color:#666;font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s}
+  .pill-btn.active{background:#1A1A2C}
+  .modal-actions{display:flex;gap:10px}
+  .modal-btn{flex:1;padding:14px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer}
+  .modal-btn.cancel{background:#1C1C2C;color:#666}
+  .modal-btn.save{color:#fff}
+
+  /* Swap modal */
+  .swap-current{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#0E0E1A;border-radius:12px;margin-bottom:20px;border:1px solid #1C1C28}
+  .swap-cur-lbl{font-size:10px;color:#444;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+  .swap-cur-name{font-size:14px;font-weight:600;color:#888}
+  .swap-arrow{font-size:20px;color:#333;flex-shrink:0}
+  .swap-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+  .swap-card{border:1.5px solid #1C1C28;border-radius:14px;padding:14px;cursor:pointer;transition:all .2s;background:#0E0E18}
+  .swap-card.sel{background:#131320}
+  .swap-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px}
+  .swap-card-name{font-size:14px;font-weight:600;color:#E8E8F0;line-height:1.2}
+  .equip-badge{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap;flex-shrink:0}
+  .swap-note{font-size:11px;color:#555;line-height:1.4}
+  .swap-weight{font-size:11px;margin-top:5px}
+  .sel-circle{width:18px;height:18px;border-radius:50%;border:2px solid #2A2A3A;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center}
+  .no-subs{text-align:center;padding:32px 0;color:#444;font-size:13px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const SUBSTITUTES = {
+  "Barbell Bench Press":[{name:"DB Bench Press",equipment:"Dumbbells",weight:70,note:"Use ~70% of barbell weight per hand"},{name:"Machine Chest Press",equipment:"Machine",weight:90,note:"Great for stability & mind-muscle"},{name:"Push-Ups",equipment:"Bodyweight",weight:0,note:"Elevate feet for more chest activation"},{name:"Cable Chest Press",equipment:"Cable",weight:50,note:"Constant tension throughout range"}],
+  "Overhead Press":[{name:"DB Shoulder Press",equipment:"Dumbbells",weight:35,note:"More range of motion than barbell"},{name:"Machine Shoulder Press",equipment:"Machine",weight:60,note:"Safer for beginners, guided path"},{name:"Arnold Press",equipment:"Dumbbells",weight:30,note:"Hits all three delt heads"},{name:"Cable Overhead Press",equipment:"Cable",weight:30,note:"Constant tension, great for isolation"}],
+  "Incline DB Press":[{name:"Incline Barbell Press",equipment:"Barbell",weight:65,note:"Heavier loads, upper chest focus"},{name:"Incline Cable Fly",equipment:"Cable",weight:20,note:"Better stretch at the bottom"},{name:"Incline Machine Press",equipment:"Machine",weight:80,note:"Stable & beginner-friendly"},{name:"Low-to-High Cable Fly",equipment:"Cable",weight:15,note:"Targets upper chest with full ROM"}],
+  "Cable Lateral Raise":[{name:"DB Lateral Raise",equipment:"Dumbbells",weight:12,note:"Classic medial delt isolation"},{name:"Machine Lateral Raise",equipment:"Machine",weight:30,note:"Keeps constant tension at top"},{name:"Plate Lateral Raise",equipment:"Plate",weight:10,note:"Control the tempo on the way down"}],
+  "Tricep Pushdown":[{name:"Overhead Tricep Extension",equipment:"Cable",weight:30,note:"Long head emphasis — great stretch"},{name:"DB Tricep Kickback",equipment:"Dumbbells",weight:15,note:"Squeeze hard at full extension"},{name:"Close-Grip Bench Press",equipment:"Barbell",weight:65,note:"Compound tricep builder"},{name:"Bench Dips",equipment:"Bodyweight",weight:0,note:"Add weight on lap to progress"}],
+  "Barbell Row":[{name:"DB Row",equipment:"Dumbbells",weight:55,note:"Unilateral — great for imbalances"},{name:"Cable Row",equipment:"Cable",weight:70,note:"Constant tension, easier on lower back"},{name:"Machine Row",equipment:"Machine",weight:80,note:"Supported — good for high volume"},{name:"T-Bar Row",equipment:"Machine",weight:65,note:"Allows heavy loading, thick back"}],
+  "Lat Pulldown":[{name:"Pull-Ups",equipment:"Bodyweight",weight:0,note:"Hardest version — most functional"},{name:"Assisted Pull-Ups",equipment:"Machine",weight:0,note:"Use assist to build up to full pull-ups"},{name:"Straight-Arm Pulldown",equipment:"Cable",weight:35,note:"Isolates lats without biceps"},{name:"Single-Arm Pulldown",equipment:"Cable",weight:30,note:"Fixes left-right strength imbalances"}],
+  "Seated Cable Row":[{name:"DB Row",equipment:"Dumbbells",weight:55,note:"Unilateral version — great for focus"},{name:"Machine Row",equipment:"Machine",weight:80,note:"Chest-supported for strict form"},{name:"Barbell Row",equipment:"Barbell",weight:85,note:"Compound mass builder"},{name:"Band Row",equipment:"Resistance Band",weight:0,note:"Good for warm-ups or at home"}],
+  "Face Pulls":[{name:"Rear Delt Fly",equipment:"Dumbbells",weight:12,note:"Lie face-down on incline bench"},{name:"Band Face Pull",equipment:"Resistance Band",weight:0,note:"Great for shoulder health at home"},{name:"Reverse Pec Deck",equipment:"Machine",weight:40,note:"Machine version — easy to isolate"},{name:"Cable Rear Delt Fly",equipment:"Cable",weight:10,note:"Cross-cable for bilateral work"}],
+  "Barbell Curl":[{name:"DB Curl",equipment:"Dumbbells",weight:25,note:"Allows supination for peak contraction"},{name:"Cable Curl",equipment:"Cable",weight:35,note:"Constant tension through full ROM"},{name:"EZ-Bar Curl",equipment:"EZ Bar",weight:50,note:"Easier on wrists than straight bar"},{name:"Hammer Curl",equipment:"Dumbbells",weight:25,note:"Hits brachialis for overall arm size"}],
+  "Barbell Back Squat":[{name:"Goblet Squat",equipment:"Dumbbell",weight:50,note:"Great form builder, upright torso"},{name:"Hack Squat",equipment:"Machine",weight:120,note:"Machine version, knees-friendly"},{name:"DB Front Squat",equipment:"Dumbbells",weight:40,note:"Quad-dominant, similar to front squat"},{name:"Leg Press",equipment:"Machine",weight:160,note:"Safer spine load, heavy quads"},{name:"Smith Machine Squat",equipment:"Smith Machine",weight:100,note:"Guided bar, good for beginners"}],
+  "Romanian Deadlift":[{name:"DB Romanian Deadlift",equipment:"Dumbbells",weight:50,note:"More ROM, great for hamstring stretch"},{name:"Cable Pull-Through",equipment:"Cable",weight:40,note:"Hip hinge with constant tension"},{name:"Good Morning",equipment:"Barbell",weight:45,note:"Bar on back, hinge at hips"},{name:"Nordic Curl",equipment:"Bodyweight",weight:0,note:"Brutal hamstring eccentric exercise"}],
+  "Leg Press":[{name:"Hack Squat",equipment:"Machine",weight:120,note:"More quad emphasis"},{name:"Goblet Squat",equipment:"Dumbbell",weight:50,note:"Bodyweight-friendly substitute"},{name:"Bulgarian Split Squat",equipment:"Dumbbells",weight:30,note:"Unilateral — great for imbalances"},{name:"Barbell Back Squat",equipment:"Barbell",weight:115,note:"King of leg exercises"}],
+  "Leg Curl":[{name:"DB Leg Curl",equipment:"Dumbbells",weight:25,note:"Hold DB between feet lying down"},{name:"Nordic Curl",equipment:"Bodyweight",weight:0,note:"Most effective hamstring exercise"},{name:"Cable Leg Curl",equipment:"Cable",weight:30,note:"Stand facing cable machine"},{name:"Swiss Ball Curl",equipment:"Swiss Ball",weight:0,note:"Unstable surface = more activation"}],
+  "Calf Raise":[{name:"Seated Calf Raise",equipment:"Machine",weight:70,note:"Hits soleus (deeper calf muscle)"},{name:"DB Calf Raise",equipment:"Dumbbells",weight:30,note:"Hold DBs for added resistance"},{name:"Leg Press Calf Raise",equipment:"Machine",weight:120,note:"On leg press machine, toes only"},{name:"Single-Leg Calf Raise",equipment:"Bodyweight",weight:0,note:"Add weight when too easy"}],
+  "Deadlift":[{name:"Trap Bar Deadlift",equipment:"Trap Bar",weight:135,note:"More quad, less lower back stress"},{name:"Romanian Deadlift",equipment:"Barbell",weight:95,note:"Hamstring-focused hip hinge"},{name:"DB Deadlift",equipment:"Dumbbells",weight:60,note:"Good for learning the movement"},{name:"Cable Pull-Through",equipment:"Cable",weight:50,note:"Hip hinge pattern, spine friendly"}],
+  "DB Bench Press":[{name:"Barbell Bench Press",equipment:"Barbell",weight:95,note:"Classic — heavier loads possible"},{name:"Cable Chest Press",equipment:"Cable",weight:45,note:"Constant tension throughout"},{name:"Machine Chest Press",equipment:"Machine",weight:90,note:"Safe and stable for beginners"},{name:"Push-Ups",equipment:"Bodyweight",weight:0,note:"No equipment needed"}],
+  "Pull-Ups":[{name:"Assisted Pull-Ups",equipment:"Machine",weight:0,note:"Use assist to build up strength"},{name:"Lat Pulldown",equipment:"Cable",weight:80,note:"Same pattern, adjustable weight"},{name:"Band-Assisted Pull-Up",equipment:"Band",weight:0,note:"Loop band around bar for assistance"},{name:"Inverted Row",equipment:"Barbell",weight:0,note:"Easier — feet on floor, rows body up"}],
+  "DB Shoulder Press":[{name:"Barbell Overhead Press",equipment:"Barbell",weight:55,note:"Heavier loads, more stability"},{name:"Machine Shoulder Press",equipment:"Machine",weight:60,note:"Guided path, great for beginners"},{name:"Arnold Press",equipment:"Dumbbells",weight:25,note:"Rotational movement hits all heads"},{name:"Cable Shoulder Press",equipment:"Cable",weight:25,note:"Constant tension version"}],
+  "Hammer Curl":[{name:"Cable Hammer Curl",equipment:"Cable",weight:25,note:"Use rope attachment for neutral grip"},{name:"Cross-Body Curl",equipment:"Dumbbells",weight:20,note:"Curl across body for peak brachialis"},{name:"Barbell Curl",equipment:"Barbell",weight:45,note:"Standard curl for overall bicep size"},{name:"Reverse Curl",equipment:"Barbell",weight:30,note:"Overhand grip — hits brachioradialis"}],
+  "Skull Crushers":[{name:"Cable Tricep Extension",equipment:"Cable",weight:30,note:"Overhead for long head stretch"},{name:"DB Tricep Extension",equipment:"Dumbbells",weight:20,note:"Single or double DB overhead"},{name:"Tricep Pushdown",equipment:"Cable",weight:40,note:"Classic cable version"},{name:"Close-Grip Bench Press",equipment:"Barbell",weight:65,note:"Compound — heavier loads possible"}],
+  "Walking Lunges":[{name:"Reverse Lunge",equipment:"Dumbbells",weight:30,note:"Easier on knees than forward lunge"},{name:"Bulgarian Split Squat",equipment:"Dumbbells",weight:25,note:"More glute emphasis, harder version"},{name:"Leg Press",equipment:"Machine",weight:150,note:"Bilateral substitute if needed"},{name:"Step-Ups",equipment:"Dumbbells",weight:25,note:"Functional, good for balance"}]
+};
+
+const EQUIP_ICONS = {Barbell:"🏋️",Dumbbells:"💪",Dumbbell:"💪",Machine:"⚙️",Cable:"🔗",Bodyweight:"🤸",Band:"📿","Resistance Band":"📿","Smith Machine":"🔩","EZ Bar":"〰️","Trap Bar":"⬡","Swiss Ball":"⭕",Plate:"🔵"};
+
+const PLAN_DEFAULT = [
+  {id:"d1",day:"MON",label:"Day 1",name:"Push",muscles:"Chest · Shoulders · Triceps",color:"#E94560",glow:"rgba(233,69,96,0.35)",exercises:[{name:"Barbell Bench Press",sets:4,reps:"5",weight:95},{name:"Overhead Press",sets:3,reps:"6–8",weight:55},{name:"Incline DB Press",sets:3,reps:"8–10",weight:40},{name:"Cable Lateral Raise",sets:3,reps:"12–15",weight:15},{name:"Tricep Pushdown",sets:3,reps:"10–12",weight:40}]},
+  {id:"d2",day:"TUE",label:"Day 2",name:"Pull",muscles:"Back · Biceps",color:"#00D4AA",glow:"rgba(0,212,170,0.35)",exercises:[{name:"Barbell Row",sets:4,reps:"5",weight:85},{name:"Lat Pulldown",sets:3,reps:"8–10",weight:80},{name:"Seated Cable Row",sets:3,reps:"10–12",weight:70},{name:"Face Pulls",sets:3,reps:"12–15",weight:30},{name:"Barbell Curl",sets:3,reps:"10–12",weight:45}]},
+  {id:"d3",day:"WED",label:"Day 3",name:"Legs",tag:"Heavy",muscles:"Quads · Hamstrings · Calves",color:"#FF9500",glow:"rgba(255,149,0,0.35)",exercises:[{name:"Barbell Back Squat",sets:4,reps:"5",weight:115},{name:"Romanian Deadlift",sets:3,reps:"8–10",weight:95},{name:"Leg Press",sets:3,reps:"10–12",weight:160},{name:"Leg Curl",sets:3,reps:"10–12",weight:55},{name:"Calf Raise",sets:4,reps:"12–15",weight:90}]},
+  {id:"d4",day:"THU",label:"Rest",name:"Recovery",muscles:"Sleep · Eat · Recover",color:"#6B7280",glow:"rgba(107,114,128,0.2)",rest:true,exercises:[]},
+  {id:"d5",day:"FRI",label:"Day 5",name:"Upper",tag:"Strength",muscles:"Full Upper Body",color:"#A855F7",glow:"rgba(168,85,247,0.35)",exercises:[{name:"Deadlift",sets:3,reps:"5",weight:135},{name:"DB Bench Press",sets:3,reps:"8–10",weight:45},{name:"Pull-Ups",sets:3,reps:"6–8",weight:0},{name:"DB Shoulder Press",sets:3,reps:"8–10",weight:35},{name:"Hammer Curl",sets:3,reps:"10–12",weight:25},{name:"Skull Crushers",sets:3,reps:"10–12",weight:40}]},
+  {id:"d6",day:"SAT",label:"Day 6",name:"Lower",tag:"Volume",muscles:"Glutes · Hamstrings · Calves",color:"#F59E0B",glow:"rgba(245,158,11,0.35)",exercises:[{name:"Romanian Deadlift",sets:4,reps:"8–10",weight:85},{name:"Leg Press",sets:3,reps:"10–12",weight:150},{name:"Walking Lunges",sets:3,reps:"10–12 ea",weight:30},{name:"Leg Curl",sets:3,reps:"10–12",weight:50},{name:"Calf Raise",sets:4,reps:"12–15",weight:80}]},
+  {id:"d7",day:"SUN",label:"Rest",name:"Recovery",muscles:"Sleep · Eat · Recover",color:"#6B7280",glow:"rgba(107,114,128,0.2)",rest:true,exercises:[]}
+];
+
+const WEEK_COUNT = 12;
+
+// Start date: Monday 29 June 2026 (month is 0-indexed: 5 = June)
+const START_DATE = new Date(2026, 5, 29);
+function getDayDate(dayIndex, weekNum) {
+  const d = new Date(START_DATE);
+  d.setDate(START_DATE.getDate() + (weekNum - 1) * 7 + dayIndex);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+const DAY_INDEX = {d1:0,d2:1,d3:2,d4:3,d5:4,d6:5,d7:6};
+
+function getIncrement(name){
+  const big=["Barbell Bench Press","Barbell Back Squat","Deadlift","Barbell Row","Romanian Deadlift","Trap Bar Deadlift"];
+  if(big.includes(name))return 5;
+  if(name==="Leg Press"||name==="Hack Squat")return 10;
+  return 2.5;
+}
+
+// ── State ──────────────────────────────────────────────────────────────────────
+function loadState(){
+  try{
+    const s=localStorage.getItem("workout_v2");
+    if(s)return JSON.parse(s);
+  }catch(e){}
+  return null;
+}
+function saveState(s){
+  try{localStorage.setItem("workout_v2",JSON.stringify(s));}catch(e){}
+}
+
+const saved=loadState();
+let STATE={
+  week: saved?.week||1,
+  plan: saved?.plan||JSON.parse(JSON.stringify(PLAN_DEFAULT)),
+  openDays: saved?.openDays||{},
+  dayDone: saved?.dayDone||{},
+  exDone: saved?.exDone||{},
+  baseWeights: saved?.baseWeights||{},
+  weekOverrides: saved?.weekOverrides||{},
+  editTarget: null,
+  swapTarget: null,
+};
+
+function persist(){
+  saveState({week:STATE.week,plan:STATE.plan,openDays:STATE.openDays,dayDone:STATE.dayDone,exDone:STATE.exDone,baseWeights:STATE.baseWeights,weekOverrides:STATE.weekOverrides});
+}
+
+function getWeight(dayId,exIdx,defaultWeight,name){
+  const bk=`${dayId}-${exIdx}`;
+  const ok=`${bk}-w${STATE.week}`;
+  if(STATE.weekOverrides[ok]!==undefined)return STATE.weekOverrides[ok];
+  const base=STATE.baseWeights[bk]??defaultWeight;
+  return+(base+(STATE.week-1)*getIncrement(name)).toFixed(1);
+}
+
+// ── SVG helpers ────────────────────────────────────────────────────────────────
+const CHECK_SVG=`<svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const EXCHECK_SVG=(color)=>`<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3L3.5 5.5L8 1" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const SEL_SVG=`<svg width="8" height="6" viewBox="0 0 8 6" fill="none"><path d="M1 3L3 5L7 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+// ── Render ─────────────────────────────────────────────────────────────────────
+function render(){
+  const activeDays=STATE.plan.filter(d=>!d.rest);
+  const wk=`w${STATE.week}`;
+  const doneDays=activeDays.filter(d=>STATE.dayDone[`${wk}-${d.id}`]).length;
+  const totalEx=activeDays.reduce((s,d)=>s+d.exercises.length,0);
+  const doneEx=activeDays.reduce((s,d)=>s+d.exercises.filter((_,i)=>STATE.exDone[`${wk}-${d.id}-${i}`]).length,0);
+  const progress=totalEx>0?Math.round((doneEx/totalEx)*100):0;
+
+  let html=`
+  <div class="header">
+    <div class="eyebrow">Progressive Overload</div>
+    <div class="title">Your <span>Workout</span><br>Plan</div>
+    <div class="subtitle">5 days · Beginner · Full Gym</div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat-pill"><div class="stat-num">${doneDays}/${activeDays.length}</div><div class="stat-lbl">Days Done</div></div>
+    <div class="stat-pill"><div class="stat-num">${doneEx}/${totalEx}</div><div class="stat-lbl">Exercises</div></div>
+    <div class="stat-pill"><div class="stat-num" style="color:${progress===100?'#22c55e':'#fff'}">${progress}%</div><div class="stat-lbl">Progress</div></div>
+  </div>
+  <div class="week-bar">`;
+  for(let w=1;w<=WEEK_COUNT;w++){
+    html+=`<div class="week-pill${STATE.week===w?' active':''}" onclick="setWeek(${w})">Wk ${w}</div>`;
+  }
+  html+=`</div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Week ${STATE.week} of ${WEEK_COUNT}</span><span>${progress}% complete</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:${(STATE.week/WEEK_COUNT)*100}%"></div></div>
+  </div>
+  <div class="hint"><span class="hint-icon">⚡</span><span class="hint-text">Week ${STATE.week} weights. <b>Tap weight to edit · Tap 🔄 to swap.</b></span></div>
+  <div class="days">`;
+
+  STATE.plan.forEach(day=>{
+    const isOpen=!!STATE.openDays[day.id];
+    const isDone=!!STATE.dayDone[`w${STATE.week}-${day.id}`];
+    const doneCount=day.exercises.filter((_,i)=>STATE.exDone[`w${STATE.week}-${day.id}-${i}`]).length;
+    const cbStyle=isDone?`background:${day.color};border-color:${day.color};box-shadow:0 0 10px ${day.color}80`:`border-color:#2A2A38`;
+
+    html+=`<div class="day-card${isDone?' done':''}${day.rest?' rest-card':''}" style="${isDone?`border-color:${day.color}40`:''}">
+      <div class="day-header" onclick="${day.rest?'':'toggleDay(\''+day.id+'\')'}">`;
+
+    if(!day.rest){
+      html+=`<div class="cb" style="${cbStyle}" onclick="event.stopPropagation();toggleDayDone('${day.id}')">${isDone?CHECK_SVG:''}</div>`;
+    } else {
+      html+=`<div style="width:22px"></div>`;
+    }
+
+    html+=`<div class="day-dot" style="background:${day.color}18;${isDone?`box-shadow:0 0 16px ${day.glow}`:''}" >
+        <span class="day-dot-lbl" style="color:${day.color}">${day.day}</span>
+        <span class="day-dot-num" style="color:${day.color}">${day.rest?'💤':day.label.replace('Day ','')}</span>
+      </div>
+      <div class="day-info">
+        <div class="day-name-row">
+          <span class="day-name">${day.name}</span>
+          ${day.tag?`<span class="day-tag" style="background:${day.color}20;color:${day.color}">${day.tag}</span>`:''}
+        </div>
+        <div class="day-muscles">${day.muscles}</div>
+        <div style="font-size:10px;color:#555;margin-top:2px">${getDayDate(DAY_INDEX[day.id],STATE.week)}</div>
+      </div>`;
+
+    if(!day.rest){
+      html+=`<div class="day-right">
+        <span class="day-badge${isDone?' done':''}">${isDone?'✓ Done':`${doneCount}/${day.exercises.length}`}</span>
+        <span class="chevron${isOpen?' open':''}">▼</span>
+      </div>`;
+    }
+    html+=`</div>`;
+
+    if(!day.rest && isOpen){
+      html+=`<div class="ex-list">`;
+      day.exercises.forEach((ex,i)=>{
+        const key=`${day.id}-${i}`;
+        const done=!!STATE.exDone[`w${STATE.week}-${key}`];
+        const isBW=ex.weight===0;
+        const w=isBW?'BW':getWeight(day.id,i,ex.weight,ex.name);
+        const hasOverride=STATE.weekOverrides[`${key}-w${STATE.week}`]!==undefined||STATE.baseWeights[key]!==undefined;
+        const isSwapped=!!ex._swapped;
+        const hasSubs=!!(SUBSTITUTES[ex.name]||SUBSTITUTES[ex._originalName]);
+        const exCbStyle=done?`background:${day.color}22;border-color:${day.color}`:`border-color:#2A2A38`;
+        const wColor=done?'#333':hasOverride?'#FFD700':day.color;
+
+        html+=`<div class="ex-row" style="background:${done?'#0C0F0C':'transparent'}">
+          <div class="ex-cb" style="${exCbStyle}" onclick="toggleEx('${day.id}',${i})">${done?EXCHECK_SVG(day.color):''}</div>
+          <div class="ex-info" onclick="toggleEx('${day.id}',${i})">
+            <div class="ex-name${done?' done':isSwapped?' swapped':''}">${ex.name}</div>
+            <div class="ex-meta">${ex.sets} sets × ${ex.reps} reps${isSwapped?'<span class="swap-tag">· swapped</span>':''}</div>
+          </div>
+          <button class="ex-swap-btn" style="opacity:${hasSubs?1:0.3}" onclick="openSwap('${day.id}',${i})">🔄</button>
+          <button class="ex-weight-btn" onclick="${isBW?'':(`openWeight('${day.id}',${i})`)}">
+            <span class="ex-w-num" style="color:${wColor}">${w}</span>
+            <span class="ex-w-unit">${isBW?'':'lbs'}</span>
+            ${isBW?'':'<span class="ex-w-hint">TAP</span>'}
+          </button>
+        </div>`;
+      });
+      html+=`</div>`;
+    }
+
+    if(day.rest){
+      html+=`<div class="rest-inner"><span class="rest-icon">🛌</span><span class="rest-text">Full rest. Prioritise sleep and nutrition to maximise recovery.</span></div>`;
+    }
+    html+=`</div>`;
+  });
+
+  html+=`</div>`;
+
+  // Weight modal
+  if(STATE.editTarget){
+    const t=STATE.editTarget;
+    const day=STATE.plan.find(d=>d.id===t.dayId);
+    const color=day?.color||'#E94560';
+    const bk=`${t.dayId}-${t.exIdx}`;
+    const base=STATE.baseWeights[bk]??t.defaultWeight;
+    const cur=+(base+(STATE.week-1)*getIncrement(t.exName)).toFixed(1);
+    const ow=STATE.weekOverrides[`${bk}-w${STATE.week}`];
+    const lw=ow!==undefined?ow:cur;
+
+    html+=`<div class="backdrop" onclick="closeModals()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-hdr">
+          <div class="modal-title">${t.exName}</div>
+          <div class="modal-sub">${t.sets} sets × ${t.reps} reps · Week ${STATE.week}</div>
+        </div>
+        <div class="modal-body">
+          <div class="w-display">
+            <button class="w-adj minus" onclick="adjWeight(-1)">−</button>
+            <div class="w-val-wrap">
+              <div class="w-val" id="wval" style="color:${color}">${lw}</div>
+              <div class="w-unit">lbs</div>
+            </div>
+            <button class="w-adj plus" style="background:${color}" onclick="adjWeight(1)">+</button>
+          </div>
+          <div class="lbl">Adjust by</div>
+          <div class="btn-row" id="step-row">
+            ${[1,2.5,5,10].map(s=>`<div class="pill-btn${STATE._step===s?' active':''}" style="${STATE._step===s?`border-color:${color};color:${color}`:''}" onclick="setStep(${s})">${s} lb</div>`).join('')}
+          </div>
+          <div style="margin-bottom:20px">
+            <div class="lbl">Apply to</div>
+            <div class="btn-row">
+              <div class="pill-btn${STATE._scope==='week'?' active':''}" style="${STATE._scope==='week'?`border-color:${color};color:${color}`:''}" onclick="setScope('week')">This week only</div>
+              <div class="pill-btn${STATE._scope==='base'?' active':''}" style="${STATE._scope==='base'?`border-color:${color};color:${color}`:''}" onclick="setScope('base')">Reset base weight</div>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="modal-btn cancel" onclick="closeModals()">Cancel</button>
+            <button class="modal-btn save" style="background:${color};box-shadow:0 0 18px ${color}60" onclick="saveWeight()">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Swap modal
+  if(STATE.swapTarget){
+    const t=STATE.swapTarget;
+    const day=STATE.plan.find(d=>d.id===t.dayId);
+    const color=day?.color||'#E94560';
+    const subs=SUBSTITUTES[t.exName]||[];
+
+    html+=`<div class="backdrop" onclick="closeModals()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-hdr">
+          <div class="modal-title">Swap Exercise</div>
+          <div class="modal-sub">Same muscles · Different equipment</div>
+        </div>
+        <div class="modal-body">
+          <div class="swap-current">
+            <div style="flex:1"><div class="swap-cur-lbl">Currently</div><div class="swap-cur-name">${t.exName}</div></div>
+            <div class="swap-arrow">→</div>
+          </div>`;
+
+    if(subs.length===0){
+      html+=`<div class="no-subs">No substitutes available for this exercise.</div>`;
+    } else {
+      html+=`<div class="lbl">Choose a substitute</div><div class="swap-list">`;
+      subs.forEach((sub,i)=>{
+        const isSel=STATE._swapSel===i;
+        const icon=EQUIP_ICONS[sub.equipment]||'🏋️';
+        html+=`<div class="swap-card${isSel?' sel':''}" style="${isSel?`border-color:${color}`:''}" onclick="selectSub(${i})">
+          <div class="swap-card-top">
+            <div class="swap-card-name">${sub.name}</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="equip-badge" style="background:${color}18;color:${color};border:1px solid ${color}40">${icon} ${sub.equipment}</div>
+              <div class="sel-circle" style="${isSel?`background:${color};border-color:${color}`:''}">${isSel?SEL_SVG:''}</div>
+            </div>
+          </div>
+          <div class="swap-note">${sub.note}</div>
+          ${sub.weight>0?`<div class="swap-weight" style="color:${color}">Suggested start: <strong>${sub.weight} lbs</strong></div>`:''}
+        </div>`;
+      });
+      html+=`</div>`;
+    }
+
+    const canSave=STATE._swapSel!==null&&STATE._swapSel!==undefined;
+    html+=`<div class="modal-actions">
+        <button class="modal-btn cancel" onclick="closeModals()">Cancel</button>
+        <button class="modal-btn save" style="background:${canSave?color:'#1C1C2C'};color:${canSave?'#fff':'#444'};${canSave?`box-shadow:0 0 18px ${color}60`:''}" onclick="confirmSwap()"${canSave?'':' disabled'}>Swap Exercise</button>
+      </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('app').innerHTML=html;
+  scrollWeekPill();
+}
+
+function scrollWeekPill(){
+  const bar=document.querySelector('.week-bar');
+  const active=document.querySelector('.week-pill.active');
+  if(bar&&active)bar.scrollLeft=active.offsetLeft-bar.offsetWidth/2+active.offsetWidth/2;
+}
+
+// ── Actions ────────────────────────────────────────────────────────────────────
+function setWeek(w){STATE.week=w;persist();render();}
+
+function toggleDay(id){STATE.openDays[id]=!STATE.openDays[id];persist();render();}
+
+function toggleDayDone(id){
+  const wk=`w${STATE.week}`;
+  const k=`${wk}-${id}`;
+  const next=!STATE.dayDone[k];
+  STATE.dayDone[k]=next;
+  const day=STATE.plan.find(d=>d.id===id);
+  if(day&&!day.rest)day.exercises.forEach((_,i)=>{STATE.exDone[`${wk}-${id}-${i}`]=next;});
+  persist();render();
+}
+
+function toggleEx(dayId,exIdx){
+  const k=`w${STATE.week}-${dayId}-${exIdx}`;
+  STATE.exDone[k]=!STATE.exDone[k];
+  persist();render();
+}
+
+function openWeight(dayId,exIdx){
+  const day=STATE.plan.find(d=>d.id===dayId);
+  const ex=day?.exercises[exIdx];
+  if(!ex||ex.weight===0)return;
+  STATE._step=2.5;STATE._scope='week';
+  const bk=`${dayId}-${exIdx}`;
+  const base=STATE.baseWeights[bk]??ex.weight;
+  const cur=+(base+(STATE.week-1)*getIncrement(ex.name)).toFixed(1);
+  STATE._wval=STATE.weekOverrides[`${bk}-w${STATE.week}`]??cur;
+  STATE.editTarget={dayId,exIdx,exName:ex.name,sets:ex.sets,reps:ex.reps,defaultWeight:ex.weight};
+  STATE.swapTarget=null;
+  render();
+}
+
+function adjWeight(dir){
+  STATE._wval=Math.max(0,+(STATE._wval+dir*STATE._step).toFixed(1));
+  const el=document.getElementById('wval');
+  if(el)el.textContent=STATE._wval;
+}
+
+function setStep(s){
+  STATE._step=s;
+  const day=STATE.plan.find(d=>d.id===STATE.editTarget?.dayId);
+  const color=day?.color||'#E94560';
+  document.querySelectorAll('#step-row .pill-btn').forEach((btn,i)=>{
+    const vals=[1,2.5,5,10];
+    btn.className='pill-btn'+(STATE._step===vals[i]?' active':'');
+    btn.style=STATE._step===vals[i]?`border-color:${color};color:${color}`:'';
+  });
+}
+
+function setScope(s){STATE._scope=s;render();}
+
+function saveWeight(){
+  const t=STATE.editTarget;
+  const bk=`${t.dayId}-${t.exIdx}`;
+  if(STATE._scope==='base'){
+    const newBase=Math.max(0,+(STATE._wval-(STATE.week-1)*getIncrement(t.exName)).toFixed(1));
+    STATE.baseWeights[bk]=newBase;
+  } else {
+    STATE.weekOverrides[`${bk}-w${STATE.week}`]=+STATE._wval.toFixed(1);
+  }
+  closeModals();persist();render();
+}
+
+function openSwap(dayId,exIdx){
+  const day=STATE.plan.find(d=>d.id===dayId);
+  const ex=day?.exercises[exIdx];
+  if(!ex)return;
+  STATE._swapSel=null;
+  STATE.swapTarget={dayId,exIdx,exName:ex._originalName||ex.name,sets:ex.sets,reps:ex.reps};
+  STATE.editTarget=null;
+  render();
+}
+
+function selectSub(i){STATE._swapSel=i;render();}
+
+function confirmSwap(){
+  const t=STATE.swapTarget;
+  if(STATE._swapSel===null||STATE._swapSel===undefined)return;
+  const subs=SUBSTITUTES[t.exName]||[];
+  const sub=subs[STATE._swapSel];
+  if(!sub)return;
+  STATE.plan=STATE.plan.map(day=>{
+    if(day.id!==t.dayId)return day;
+    return {...day,exercises:day.exercises.map((ex,i)=>{
+      if(i!==t.exIdx)return ex;
+      const newEx={...ex,name:sub.name,_swapped:true,_originalName:ex._originalName||ex.name};
+      if(sub.weight>0){newEx.weight=sub.weight;STATE.baseWeights[`${t.dayId}-${t.exIdx}`]=sub.weight;}
+      return newEx;
+    })};
+  });
+  closeModals();persist();render();
+}
+
+function closeModals(){
+  STATE.editTarget=null;STATE.swapTarget=null;
+  STATE._swapSel=null;render();
+}
+
+render();
+</script>
+</body>
+</html>
